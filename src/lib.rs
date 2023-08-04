@@ -1,10 +1,11 @@
 use num_bigint::{BigUint, RandBigInt};
+use rand::Rng;
 
 pub struct ZKP {
-    p: BigUint,
-    q: BigUint,
-    alpha: BigUint,
-    beta: BigUint,
+    pub p: BigUint,
+    pub q: BigUint,
+    pub alpha: BigUint,
+    pub beta: BigUint,
 }
 
 impl ZKP {
@@ -43,10 +44,18 @@ impl ZKP {
         cond1 && cond2
     }
 
-    pub fn generate_random_below(bound: &BigUint) -> BigUint {
+    pub fn generate_random_number_below(bound: &BigUint) -> BigUint {
         let mut rng = rand::thread_rng();
 
         rng.gen_biguint_below(bound)
+    }
+
+    pub fn generate_random_string(size: usize) -> String {
+        rand::thread_rng()
+           .sample_iter(rand::distributions::Alphanumeric)
+           .take(size)
+           .map(char::from)
+           .collect()
     }
 
     pub fn get_constants() -> (BigUint, BigUint, BigUint, BigUint) {
@@ -60,7 +69,7 @@ impl ZKP {
         );
 
         // beta = alpha^i is also a generator
-        let beta = alpha.modpow(&ZKP::generate_random_below(&q), &p);
+        let beta = alpha.modpow(&ZKP::generate_random_number_below(&q), &p);
 
         (alpha, beta, p, q)
     }
@@ -126,9 +135,9 @@ mod test {
         };
 
         let x = BigUint::from(6u32);
-        let k = ZKP::generate_random_below(&q);
+        let k = ZKP::generate_random_number_below(&q);
 
-        let c = ZKP::generate_random_below(&q);
+        let c = ZKP::generate_random_number_below(&q);
 
         let y1 = ZKP::exponentiate(&alpha, &x, &p);
         let y2 = ZKP::exponentiate(&beta, &x, &p);
@@ -180,7 +189,7 @@ mod test {
         );
 
         // beta = alpha^i is also a generator
-        let beta = alpha.modpow(&ZKP::generate_random_below(&q), &p);
+        let beta = alpha.modpow(&ZKP::generate_random_number_below(&q), &p);
 
         let zkp = ZKP {
             p: p.clone(),
@@ -189,10 +198,10 @@ mod test {
             beta: beta.clone(),
         };
 
-        let x = ZKP::generate_random_below(&q);
-        let k = ZKP::generate_random_below(&q);
+        let x = ZKP::generate_random_number_below(&q);
+        let k = ZKP::generate_random_number_below(&q);
 
-        let c = ZKP::generate_random_below(&q);
+        let c = ZKP::generate_random_number_below(&q);
 
         let y1 = ZKP::exponentiate(&alpha, &x, &p);
         let y2 = ZKP::exponentiate(&beta, &x, &p);
@@ -255,7 +264,7 @@ mod test {
         );
 
         // beta = alpha^i is also a generator
-        let beta = alpha.modpow(&ZKP::generate_random_below(&q), &p);
+        let beta = alpha.modpow(&ZKP::generate_random_number_below(&q), &p);
 
         let zkp = ZKP {
             p: p.clone(),
@@ -264,10 +273,10 @@ mod test {
             beta: beta.clone(),
         };
 
-        let x = ZKP::generate_random_below(&q);
-        let k = ZKP::generate_random_below(&q);
+        let x = ZKP::generate_random_number_below(&q);
+        let k = ZKP::generate_random_number_below(&q);
 
-        let c = ZKP::generate_random_below(&q);
+        let c = ZKP::generate_random_number_below(&q);
 
         let y1 = ZKP::exponentiate(&alpha, &x, &p);
         let y2 = ZKP::exponentiate(&beta, &x, &p);
