@@ -5,7 +5,7 @@ pub mod zkp_auth {
     include!("./zkp_auth.rs");
 }
 
-use zkp_auth::{auth_server::{Auth, AuthServer}, RegisterRequest, RegisterResponse, AuthenticationChallengeRequest, AuthenticationChallengeResponse, AutheticationAnswerRequest, AutheticationAnswerResponse};
+use zkp_auth::{auth_server::{Auth, AuthServer}, RegisterRequest, RegisterResponse, AuthenticationChallengeRequest, AuthenticationChallengeResponse, AuthenticationAnswerRequest, AuthenticationAnswerResponse};
 
 #[derive(Debug,Default)]
 struct AuthImpl {}
@@ -20,7 +20,7 @@ impl Auth for AuthImpl {
         todo!()
     } 
 
-    async fn verify_authentication(&self, request: Request<AutheticationAnswerRequest>) -> Result<Response<AutheticationAnswerResponse>, Status> {
+    async fn verify_authentication(&self, request: Request<AuthenticationAnswerRequest>) -> Result<Response<AuthenticationAnswerResponse>, Status> {
         todo!()
     } 
 }
