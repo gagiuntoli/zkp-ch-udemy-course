@@ -1,5 +1,7 @@
 
 use tonic::{transport::Server, Code, Request, Response, Status, codegen::http::request};
+use num_bigint::BigUint;
+use std::{sync::Mutex, collections::HashMap};
 
 pub mod zkp_auth {
     include!("./zkp_auth.rs");
@@ -8,12 +10,44 @@ pub mod zkp_auth {
 use zkp_auth::{auth_server::{Auth, AuthServer}, RegisterRequest, RegisterResponse, AuthenticationChallengeRequest, AuthenticationChallengeResponse, AuthenticationAnswerRequest, AuthenticationAnswerResponse};
 
 #[derive(Debug,Default)]
-struct AuthImpl {}
+pub struct AuthImpl {
+    pub user_info: Mutex<HashMap<String, UserInfo>>,
+}
+
+#[derive(Debug,Default)]
+pub struct UserInfo {
+    // registration
+    pub user_name: String,
+    pub y1: BigUint,
+    pub y2: BigUint,
+    // authorization
+    pub r1: BigUint,
+    pub r2: BigUint,
+    // verification
+    pub c: BigUint,
+    pub s: BigUint,
+    pub session_id: String,
+}
 
 #[tonic::async_trait]
 impl Auth for AuthImpl {
     async fn register(&self, request: Request<RegisterRequest>) -> Result<Response<RegisterResponse>, Status> {
-        todo!()
+        println!("Processing Register: {:?}", request);
+
+        let request = request.into_inner();
+
+        let user_name = request.user;
+
+        let mut user_info = UserInfo::default();
+
+        user_info.user_name = user_name.clone();
+        user_info.y1 = BigUint::from_bytes_be(&request.y1);
+        user_info.y2 = BigUint::from_bytes_be(&request.y2);
+
+        let mut user_info_hashmap = &mut self.user_info.lock().unwrap();
+        user_info_hashmap.insert(user_name, user_info);
+
+        Ok(Response::new(RegisterResponse {}))
     } 
 
     async fn create_authentication_challenge(&self, request: Request<AuthenticationChallengeRequest>) -> Result<Response<AuthenticationChallengeResponse>, Status> {

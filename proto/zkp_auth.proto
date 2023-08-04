@@ -12,8 +12,7 @@ message RegisterRequest {
     bytes y2 = 3;
 }
 
-message RegisterResponse {
-}
+message RegisterResponse {}
 
 /*
  * Prover ask for challenge in the server sending
