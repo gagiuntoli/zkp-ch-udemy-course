@@ -69,7 +69,10 @@ impl ZKP {
         );
 
         // beta = alpha^i is also a generator
-        let beta = alpha.modpow(&ZKP::generate_random_number_below(&q), &p);
+        let exp = BigUint::from_bytes_be(
+            &hex::decode("266FEA1E5C41564B777E69").unwrap(),
+        );
+        let beta = alpha.modpow(&exp, &p);
 
         (alpha, beta, p, q)
     }

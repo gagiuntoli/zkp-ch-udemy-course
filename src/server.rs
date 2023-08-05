@@ -68,6 +68,8 @@ impl Auth for AuthImpl {
             let auth_id = ZKP::generate_random_string(12);
 
             user_info.c = c.clone();
+            user_info.r1 = BigUint::from_bytes_be(&request.r1);
+            user_info.r2 = BigUint::from_bytes_be(&request.r2);
 
             let mut auth_id_to_user = &mut self.auth_id_to_user.lock().unwrap();
             auth_id_to_user.insert(auth_id.clone(), user_name);
@@ -92,11 +94,12 @@ impl Auth for AuthImpl {
             let user_info = user_info_hashmap.get_mut(user_name).expect("AuthId not found on hashmap");
 
             let s = BigUint::from_bytes_be(&request.s);
+            user_info.s = s;
 
             let (alpha, beta, p, q) = ZKP::get_constants();
             let zkp = ZKP { alpha, beta, p, q };
 
-            let verification = zkp.verify(&user_info.r1, &user_info.r2, &user_info.y1, &user_info.y2, &user_info.c, &s);
+            let verification = zkp.verify(&user_info.r1, &user_info.r2, &user_info.y1, &user_info.y2, &user_info.c, &user_info.s);
 
             if verification {
                 let session_id = ZKP::generate_random_string(12);
