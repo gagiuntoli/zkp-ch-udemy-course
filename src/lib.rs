@@ -9,9 +9,11 @@ pub struct ZKP {
 }
 
 impl ZKP {
-    /// output = n^exp mod p
-    pub fn exponentiate(n: &BigUint, exponent: &BigUint, modulus: &BigUint) -> BigUint {
-        n.modpow(exponent, modulus)
+    /// output = (alpha^exp mod p, beta^exp mod p)
+    pub fn compute_pair(&self, exp: &BigUint) -> (BigUint, BigUint) {
+        let p1 = self.alpha.modpow(exp, &self.p);
+        let p2 = self.beta.modpow(exp, &self.p);
+        (p1, p2)
     }
 
     /// output = s = k - c * x mod q
@@ -52,10 +54,10 @@ impl ZKP {
 
     pub fn generate_random_string(size: usize) -> String {
         rand::thread_rng()
-           .sample_iter(rand::distributions::Alphanumeric)
-           .take(size)
-           .map(char::from)
-           .collect()
+            .sample_iter(rand::distributions::Alphanumeric)
+            .take(size)
+            .map(char::from)
+            .collect()
     }
 
     pub fn get_constants() -> (BigUint, BigUint, BigUint, BigUint) {
@@ -69,9 +71,7 @@ impl ZKP {
         );
 
         // beta = alpha^i is also a generator
-        let exp = BigUint::from_bytes_be(
-            &hex::decode("266FEA1E5C41564B777E69").unwrap(),
-        );
+        let exp = BigUint::from_bytes_be(&hex::decode("266FEA1E5C41564B777E69").unwrap());
         let beta = alpha.modpow(&exp, &p);
 
         (alpha, beta, p, q)
@@ -100,13 +100,11 @@ mod test {
 
         let c = BigUint::from(4u32);
 
-        let y1 = ZKP::exponentiate(&alpha, &x, &p);
-        let y2 = ZKP::exponentiate(&beta, &x, &p);
+        let (y1, y2) = zkp.compute_pair(&x);
         assert_eq!(y1, BigUint::from(2u32));
         assert_eq!(y2, BigUint::from(3u32));
 
-        let r1 = ZKP::exponentiate(&alpha, &k, &p);
-        let r2 = ZKP::exponentiate(&beta, &k, &p);
+        let (r1, r2) = zkp.compute_pair(&k);
         assert_eq!(r1, BigUint::from(8u32));
         assert_eq!(r2, BigUint::from(4u32));
 
@@ -142,13 +140,11 @@ mod test {
 
         let c = ZKP::generate_random_number_below(&q);
 
-        let y1 = ZKP::exponentiate(&alpha, &x, &p);
-        let y2 = ZKP::exponentiate(&beta, &x, &p);
+        let (y1, y2) = zkp.compute_pair(&x);
         assert_eq!(y1, BigUint::from(2u32));
         assert_eq!(y2, BigUint::from(3u32));
 
-        let r1 = ZKP::exponentiate(&alpha, &k, &p);
-        let r2 = ZKP::exponentiate(&beta, &k, &p);
+        let (r1, r2) = zkp.compute_pair(&k);
 
         let s = zkp.solve(&k, &c, &x);
 
@@ -206,11 +202,9 @@ mod test {
 
         let c = ZKP::generate_random_number_below(&q);
 
-        let y1 = ZKP::exponentiate(&alpha, &x, &p);
-        let y2 = ZKP::exponentiate(&beta, &x, &p);
+        let (y1, y2) = zkp.compute_pair(&x);
 
-        let r1 = ZKP::exponentiate(&alpha, &k, &p);
-        let r2 = ZKP::exponentiate(&beta, &k, &p);
+        let (r1, r2) = zkp.compute_pair(&k);
 
         let s = zkp.solve(&k, &c, &x);
 
@@ -281,11 +275,8 @@ mod test {
 
         let c = ZKP::generate_random_number_below(&q);
 
-        let y1 = ZKP::exponentiate(&alpha, &x, &p);
-        let y2 = ZKP::exponentiate(&beta, &x, &p);
-
-        let r1 = ZKP::exponentiate(&alpha, &k, &p);
-        let r2 = ZKP::exponentiate(&beta, &k, &p);
+        let (y1, y2) = zkp.compute_pair(&x);
+        let (r1, r2) = zkp.compute_pair(&k);
 
         let s = zkp.solve(&k, &c, &x);
 
